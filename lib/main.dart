@@ -1,204 +1,123 @@
 import 'package:flutter/material.dart';
 
+// The entry point that starts the Flutter application
 void main() {
   runApp(const MyApp());
 }
 
+// The root widget of your application
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Recipe Categories',
+      title: 'Lab 2 App',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepOrange),
-        useMaterial3: true,
+        primarySwatch: Colors.blue,
       ),
-      home: const RecipeHomePage(),
+      home: const Lab2LoginPage(),
     );
   }
 }
 
-class RecipeHomePage extends StatelessWidget {
-  const RecipeHomePage({super.key});
+// Your Stateful Login Page
+class Lab2LoginPage extends StatefulWidget {
+  const Lab2LoginPage({super.key});
 
-  // Practice making widgets from smaller widgets by writing makeRow()
-  Widget makeRow(
-      List images,
-      List labels,
-      bool isOverlay,
-      ) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: List.generate(images.length, (index) {
-        if (isOverlay) {
-          // Text OVERLAYING the image using Stack
-          return Stack(
-            alignment: Alignment.center,
-            children: [
-              CircleAvatar(
-                radius: 50.0,
-                backgroundImage: AssetImage(images[index]),
-              ),
-              Text(
-                labels[index],
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                  shadows: [
-                    Shadow(
-                      blurRadius: 4.0,
-                      color: Colors.black,
-                      offset: Offset(1.0, 1.0),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          );
-        } else {
-          // Text BELOW the image using Column
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CircleAvatar(
-                radius: 50.0,
-                backgroundImage: AssetImage(images[index]),
-              ),
-              const SizedBox(height: 8.0),
-              Text(
-                labels[index],
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.black87,
-                ),
-              ),
-            ],
-          );
-        }
-      }),
-    );
-  }
+  @override
+  State<Lab2LoginPage> createState() => _Lab2LoginPageState();
+}
+
+class _Lab2LoginPageState extends State<Lab2LoginPage> {
+  // Controller to read the password string
+  final TextEditingController _passwordController = TextEditingController();
+
+  // Variable initialized to the question mark image (using images_lab2 and .jpg)
+  var imageSource = "images_lab2/question-mark.jpg";
+
+  // Variable to track the current language (English by default)
+  bool isEnglish = true;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
+      appBar: AppBar(
+        title: Text(isEnglish ? 'Lab 2 Login' : 'Labo 2 Connexion'),
+      ),
+      body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 16.0),
-          // Meets Demonstration Criteria: Root is a Column() using SpaceBetween
+          padding: const EdgeInsets.all(16.0),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Item 1: Main Title
-              const Text(
-                "BROWSE CATEGORIES",
-                style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 2.0,
-                  color: Colors.black87,
+              const SizedBox(height: 20),
+
+              // Login Name Field
+              TextField(
+                decoration: InputDecoration(
+                  labelText: isEnglish ? "Login name" : "Nom d'utilisateur",
+                  border: const OutlineInputBorder(),
                 ),
-                textAlign: TextAlign.center,
               ),
+              const SizedBox(height: 16),
 
-              // Item 2: Subtitle
-              const Text(
-                "Not sure about exactly which recipe you're looking for? Do a search, or dive into our most popular categories.",
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.black87,
-                  height: 1.3,
+              // Password Field with obscureText: true
+              TextField(
+                controller: _passwordController,
+                obscureText: true,
+                decoration: InputDecoration(
+                  labelText: isEnglish ? "Password" : "Mot de passe",
+                  border: const OutlineInputBorder(),
                 ),
-                textAlign: TextAlign.center,
               ),
+              const SizedBox(height: 20),
 
-              // Item 3: Meat Header
-              const Text(
-                "BY MEAT",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.2,
-                  color: Colors.black87,
-                ),
-                textAlign: TextAlign.center,
+              // Login Button
+              ElevatedButton(
+                onPressed: () {
+                  // Read the string typed in the password field
+                  String password = _passwordController.text;
+
+                  setState(() {
+                    // Check if string is "ASDF"
+                    if (password == "ASDF") {
+                      imageSource = "images_lab2/light-bulb.jpg";
+                    } else {
+                      imageSource = "images_lab2/stop-sign.jpg";
+                    }
+                  });
+                },
+                child: Text(isEnglish ? "Login" : "Connexion"),
               ),
+              const SizedBox(height: 30),
 
-              // Item 4: Meat Row
-              makeRow(
-                const [
-                  "assets/images/beef.jpg",
-                  "assets/images/chicken.jpg",
-                  "assets/images/pork.jpg",
-                  "assets/images/seafood.jpg",
-                ],
-                const ["BEEF", "CHICKEN", "PORK", "SEAFOOD"],
-                true, // Overlay is true
+              // Image display with 300x300 size
+              Image.asset(
+                imageSource,
+                width: 300,
+                height: 300,
               ),
+              const SizedBox(height: 30),
 
-              // Item 5: Course Header
-              const Text(
-                "BY COURSE",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.2,
-                  color: Colors.black87,
-                ),
-                textAlign: TextAlign.center,
-              ),
-
-              // Item 6: Course Row
-              makeRow(
-                const [
-                  "assets/images/main_dishes.jpg",
-                  "assets/images/salad.jpg",
-                  "assets/images/side_dishes.jpg",
-                  "assets/images/crockpot.jpg",
-                ],
-                const [
-                  "Main Dishes",
-                  "Salad Recipes",
-                  "Side Dishes",
-                  "Crockpot",
-                ],
-                false, // Overlay is false
-              ),
-
-              // Item 7: Dessert Header
-              const Text(
-                "BY DESSERT",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.2,
-                  color: Colors.black87,
-                ),
-                textAlign: TextAlign.center,
-              ),
-
-              // Item 8: Dessert Row
-              makeRow(
-                const [
-                  "assets/images/ice_cream.jpg",
-                  "assets/images/brownies.jpg",
-                  "assets/images/pies.jpg",
-                  "assets/images/cookies.jpg",
-                ],
-                const ["Ice Cream", "Brownies", "Pies", "Cookies"],
-                false, // Overlay is false
+              // Language Switch Button (Moved below the image)
+              ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    isEnglish = !isEnglish;
+                  });
+                },
+                child: Text(isEnglish ? "Switch to French" : "Passer à l'anglais"),
               ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _passwordController.dispose();
+    super.dispose();
   }
 }
