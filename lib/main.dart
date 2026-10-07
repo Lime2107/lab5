@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // The entry point that starts the Flutter application
 void main() {
@@ -30,7 +31,8 @@ class Lab2LoginPage extends StatefulWidget {
 }
 
 class _Lab2LoginPageState extends State<Lab2LoginPage> {
-  // Controller to read the password string
+  // Controllers to read the text fields
+  final TextEditingController _loginController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
   // Variable initialized to the question mark image (using images_lab2 and .jpg)
@@ -38,6 +40,39 @@ class _Lab2LoginPageState extends State<Lab2LoginPage> {
 
   // Variable to track the current language (English by default)
   bool isEnglish = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedCredentials();
+  }
+
+  // Function to load saved credentials when the app starts
+  Future<void> _loadSavedCredentials() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? savedLogin = prefs.getString('loginName');
+    String? savedPassword = prefs.getString('password');
+
+    // If we have saved data, put it in the text fields and show a Snackbar
+    if (savedLogin != null && savedPassword != null) {
+      setState(() {
+        _loginController.text = savedLogin;
+        _passwordController.text = savedPassword;
+      });
+
+      // Show the Snackbar after the UI builds
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(isEnglish
+                ? "Previous login name and password loaded."
+                : "Nom d'utilisateur et mot de passe précédents chargés."),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,6 +89,7 @@ class _Lab2LoginPageState extends State<Lab2LoginPage> {
 
               // Login Name Field
               TextField(
+                controller: _loginController,
                 decoration: InputDecoration(
                   labelText: isEnglish ? "Login name" : "Nom d'utilisateur",
                   border: const OutlineInputBorder(),
@@ -75,7 +111,6 @@ class _Lab2LoginPageState extends State<Lab2LoginPage> {
               // Login Button
               ElevatedButton(
                 onPressed: () {
-                  // Read the string typed in the password field
                   String password = _passwordController.text;
 
                   setState(() {
@@ -86,6 +121,47 @@ class _Lab2LoginPageState extends State<Lab2LoginPage> {
                       imageSource = "images_lab2/stop-sign.jpg";
                     }
                   });
+
+                  // Show the AlertDialog asking to save credentials
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext dialogContext) {
+                      return AlertDialog(
+                        title: Text(isEnglish ? "Save Login?" : "Enregistrer la connexion?"),
+                        content: Text(isEnglish
+                            ? "Would you like to save your username and password for the next time?"
+                            : "Voulez-vous enregistrer votre nom d'utilisateur et votre mot de passe pour la prochaine fois?"),
+                        actions: [
+                          TextButton(
+                            onPressed: () async {
+                              // Clear SharedPreferences data
+                              final prefs = await SharedPreferences.getInstance();
+                              await prefs.remove('loginName');
+                              await prefs.remove('password');
+
+                              if (context.mounted) {
+                                Navigator.of(dialogContext).pop();
+                              }
+                            },
+                            child: Text(isEnglish ? "No" : "Non"),
+                          ),
+                          TextButton(
+                            onPressed: () async {
+                              // Save to SharedPreferences
+                              final prefs = await SharedPreferences.getInstance();
+                              await prefs.setString('loginName', _loginController.text);
+                              await prefs.setString('password', _passwordController.text);
+
+                              if (context.mounted) {
+                                Navigator.of(dialogContext).pop();
+                              }
+                            },
+                            child: Text(isEnglish ? "Yes" : "Oui"),
+                          ),
+                        ],
+                      );
+                    },
+                  );
                 },
                 child: Text(isEnglish ? "Login" : "Connexion"),
               ),
@@ -99,7 +175,7 @@ class _Lab2LoginPageState extends State<Lab2LoginPage> {
               ),
               const SizedBox(height: 30),
 
-              // Language Switch Button (Moved below the image)
+              // Language Switch Button
               ElevatedButton(
                 onPressed: () {
                   setState(() {
@@ -117,6 +193,7 @@ class _Lab2LoginPageState extends State<Lab2LoginPage> {
 
   @override
   void dispose() {
+    _loginController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
